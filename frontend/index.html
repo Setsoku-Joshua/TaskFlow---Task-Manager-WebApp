@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taskflow</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F8FAFC;
+    --surface: #FFFFFF;
+    --indigo: #4F46E5;
+    --indigo-dark: #3730A3;
+    --indigo-light: #EEF2FF;
+    --indigo-mid: #818CF8;
+    --slate-900: #0F172A;
+    --slate-700: #334155;
+    --slate-500: #64748B;
+    --slate-400: #94A3B8;
+    --slate-200: #E2E8F0;
+    --slate-100: #F1F5F9;
+    --red: #EF4444;
+    --red-light: #FEF2F2;
+    --green: #22C55E;
+    --green-light: #F0FDF4;
+    --amber: #F59E0B;
+    --amber-light: #FFFBEB;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+    --shadow-lg: 0 10px 40px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--slate-900);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #auth-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: var(--bg);
+    background-image:
+      radial-gradient(ellipse 60% 50% at 20% 10%, rgba(79,70,229,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 80% 80%, rgba(129,140,248,0.05) 0%, transparent 70%);
+  }
+
+  .auth-card {
+    background: var(--surface);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--slate-200);
+    width: 100%;
+    max-width: 420px;
+    padding: 48px 40px;
+    animation: slideUp 0.35s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .auth-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+
+  .auth-logo-mark {
+    width: 36px;
+    height: 36px;
+    background: var(--indigo);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .auth-logo-mark svg {
+    width: 20px;
+    height: 20px;
+    fill: white;
+  }
+
+  .auth-logo-text {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: var(--slate-900);
+    letter-spacing: -0.3px;
+  }
+
+  .auth-heading {
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    color: var(--slate-900);
+    margin-bottom: 6px;
+  }
+
+  .auth-subtext {
+    color: var(--slate-500);
+    font-size: 14px;
+    margin-bottom: 32px;
+  }
+
+  .form-group { margin-bottom: 18px; }
+
+  .form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--slate-700);
+    margin-bottom: 6px;
+    letter-spacing: 0.01em;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--slate-200);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--slate-900);
+    background: var(--surface);
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition);
+  }
+
+  .form-input:focus {
+    border-color: var(--indigo);
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+  }
+
+  .form-input::placeholder { color: var(--slate-400); }
+
+  .form-input.error { border-color: var(--red); box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+
+  .btn-primary {
+    width: 100%;
+    padding: 12px 20px;
+    background: var(--indigo);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: 0.01em;
+    margin-top: 8px;
+  }
+
+  .btn-primary:hover { background: var(--indigo-dark); box-shadow: 0 4px 12px rgba(79,70,229,0.3); }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  .auth-toggle {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--slate-500);
+  }
+
+  .auth-toggle a {
+    color: var(--indigo);
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .auth-toggle a:hover { text-decoration: underline; }
+
+  .error-banner {
+    background: var(--red-light);
+    border: 1px solid #FECACA;
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 14px;
+    color: #B91C1C;
+    margin-bottom: 18px;
+    display: none;
+    animation: fadeIn 0.2s ease;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .error-banner.show { display: block; }
+
+  #app-screen { display: none; min-height: 100vh; }
+
+  .navbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--slate-200);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-shrink: 0;
+  }
+
+  .nav-logo-mark {
+    width: 30px;
+    height: 30px;
+    background: var(--indigo);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav-logo-mark svg {
+    width: 17px;
+    height: 17px;
+    fill: white;
+  }
+
+  .nav-logo-text {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px;
+    color: var(--slate-900);
+    letter-spacing: -0.2px;
+  }
+
+  .nav-spacer { flex: 1; }
+
+  .nav-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .nav-user-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--slate-700);
+  }
+
+  .nav-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--indigo-light);
+    color: var(--indigo);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .btn-logout {
+    background: none;
+    border: 1.5px solid var(--slate-200);
+    border-radius: var(--radius-sm);
+    padding: 6px 14px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--slate-500);
+    cursor: pointer;
+    transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-logout:hover { border-color: var(--slate-400); color: var(--slate-700); background: var(--slate-100); }
+
+  .main-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    gap: 16px;
+  }
+
+  .page-title {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.6px;
+    color: var(--slate-900);
+    line-height: 1.2;
+  }
+
+  .page-sub {
+    font-size: 14px;
+    color: var(--slate-500);
+    margin-top: 4px;
+  }
+
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius-md);
+    padding: 20px 22px;
+    transition: box-shadow var(--transition);
+  }
+
+  .stat-card:hover { box-shadow: var(--shadow-sm); }
+
+  .stat-label {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--slate-400);
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: -1px;
+    color: var(--slate-900);
+    line-height: 1;
+  }
+
+  .stat-card.indigo .stat-value { color: var(--indigo); }
+  .stat-card.green .stat-value { color: #16A34A; }
+
+  .filter-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+    align-items: center;
+  }
+
+  .search-wrap {
+    position: relative;
+    flex: 1;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--slate-400);
+    pointer-events: none;
+  }
+
+  .search-icon svg { display: block; width: 16px; height: 16px; }
+
+  .search-input {
+    width: 100%;
+    padding: 9px 14px 9px 38px;
+    border: 1.5px solid var(--slate-200);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--slate-900);
+    background: var(--surface);
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition);
+  }
+
+  .search-input:focus { border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+  .search-input::placeholder { color: var(--slate-400); }
+
+  .filter-pills {
+    display: flex;
+    gap: 6px;
+  }
+
+  .filter-pill {
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid var(--slate-200);
+    background: var(--surface);
+    color: var(--slate-500);
+    transition: all var(--transition);
+    white-space: nowrap;
+  }
+
+  .filter-pill:hover { border-color: var(--indigo-mid); color: var(--indigo); }
+  .filter-pill.active { background: var(--indigo); border-color: var(--indigo); color: white; }
+
+  .create-section {
+    background: var(--surface);
+    border: 1.5px solid var(--slate-200);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 32px;
+    box-shadow: var(--shadow-sm);
+    transition: border-color var(--transition);
+  }
+
+  .create-section:focus-within { border-color: var(--indigo-mid); }
+
+  .create-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--slate-700);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .create-title-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--indigo);
+    flex-shrink: 0;
+  }
+
+  .create-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .create-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--slate-200);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--slate-900);
+    background: var(--slate-100);
+    outline: none;
+    transition: all var(--transition);
+  }
+
+  .create-input:focus {
+    background: var(--surface);
+    border-color: var(--indigo);
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+  }
+
+  .create-input::placeholder { color: var(--slate-400); }
+
+  .create-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .create-char-hint { font-size: 12px; color: var(--slate-400); }
+
+  .btn-create {
+    padding: 9px 20px;
+    background: var(--indigo);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .btn-create:hover { background: var(--indigo-dark); box-shadow: 0 4px 12px rgba(79,70,229,0.3); }
+  .btn-create:active { transform: scale(0.97); }
+  .btn-create:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-create svg { width: 15px; height: 15px; }
+
+  .tasks-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .tasks-section-label {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--slate-400);
+  }
+
+  .task-count-badge {
+    background: var(--slate-100);
+    color: var(--slate-500);
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .task-card {
+    background: var(--surface);
+    border: 1.5px solid var(--slate-200);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    transition: all var(--transition);
+    animation: taskIn 0.25s cubic-bezier(0.4,0,0.2,1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  @keyframes taskIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .task-card:hover { border-color: var(--slate-300); box-shadow: var(--shadow-sm); }
+
+  .task-card.completed {
+    background: var(--slate-100);
+    border-color: var(--slate-200);
+    opacity: 0.7;
+  }
+
+  .task-card.leaving {
+    animation: taskOut 0.2s cubic-bezier(0.4,0,0.2,1) forwards;
+  }
+
+  @keyframes taskOut {
+    to { opacity: 0; transform: scale(0.97); height: 0; padding: 0; margin: 0; border: none; }
+  }
+
+  /* Colored left accent */
+  .task-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--indigo);
+    border-radius: 4px 0 0 4px;
+    opacity: 0;
+    transition: opacity var(--transition);
+  }
+
+  .task-card:hover::before { opacity: 1; }
+  .task-card.completed::before { background: var(--green); opacity: 0.6; }
+
+  /* Checkbox */
+  .task-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 2px solid var(--slate-300);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 2px;
+    transition: all var(--transition);
+    background: var(--surface);
+  }
+
+  .task-check:hover { border-color: var(--indigo); background: var(--indigo-light); }
+  .task-check.checked { background: var(--indigo); border-color: var(--indigo); }
+
+  .task-check svg { width: 11px; height: 11px; opacity: 0; transition: opacity 0.15s; }
+  .task-check.checked svg { opacity: 1; }
+
+  /* Task body */
+  .task-body { flex: 1; min-width: 0; }
+
+  .task-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--slate-900);
+    line-height: 1.4;
+    margin-bottom: 3px;
+    transition: color var(--transition);
+    word-break: break-word;
+  }
+
+  .task-card.completed .task-title {
+    text-decoration: line-through;
+    color: var(--slate-400);
+  }
+
+  .task-desc {
+    font-size: 13px;
+    color: var(--slate-500);
+    line-height: 1.5;
+    word-break: break-word;
+  }
+
+  .task-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .task-date {
+    font-size: 12px;
+    color: var(--slate-400);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .task-date svg { width: 11px; height: 11px; }
+
+  .task-status-badge {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+
+  .status-pending {
+    background: var(--amber-light);
+    color: #92400E;
+  }
+
+  .status-done {
+    background: var(--green-light);
+    color: #15803D;
+  }
+
+  /* Task actions */
+  .task-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity var(--transition);
+  }
+
+  .task-card:hover .task-actions { opacity: 1; }
+
+  .task-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--slate-400);
+    transition: all var(--transition);
+    flex-shrink: 0;
+  }
+
+  .task-btn:hover { background: var(--slate-100); color: var(--slate-700); }
+  .task-btn.delete:hover { background: var(--red-light); color: var(--red); }
+
+  .task-btn svg { width: 15px; height: 15px; }
+
+  .edit-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--slate-900);
+    outline: none;
+    padding: 0;
+    border-bottom: 1.5px solid var(--indigo);
+  }
+
+  .edit-desc-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--slate-500);
+    outline: none;
+    padding: 0;
+    border-bottom: 1.5px solid var(--slate-300);
+    resize: none;
+    margin-top: 3px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 64px 24px;
+  }
+
+  .empty-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-lg);
+    background: var(--indigo-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+  }
+
+  .empty-icon svg { width: 30px; height: 30px; color: var(--indigo); }
+
+  .empty-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--slate-700);
+    margin-bottom: 8px;
+  }
+
+  .empty-sub {
+    font-size: 14px;
+    color: var(--slate-400);
+    max-width: 280px;
+    margin: 0 auto;
+  }
+
+  #toast-container {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+  }
+
+  .toast {
+    background: var(--slate-900);
+    color: white;
+    padding: 12px 18px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: var(--shadow-lg);
+    animation: toastIn 0.25s cubic-bezier(0.4,0,0.2,1);
+    min-width: 220px;
+  }
+
+  .toast.success { background: #166534; }
+  .toast.error   { background: #991B1B; }
+
+  .toast svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(24px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes toastOut {
+    to { opacity: 0; transform: translateX(24px); height: 0; padding: 0; margin: 0; }
+  }
+
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2.5px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 640px) {
+    .auth-card { padding: 32px 24px; }
+    .stats-bar { grid-template-columns: 1fr 1fr; }
+    .stats-bar .stat-card:last-child { grid-column: span 2; }
+    .create-row { grid-template-columns: 1fr; }
+    .filter-bar { flex-wrap: wrap; }
+    .page-header { flex-direction: column; gap: 12px; }
+    .nav-user-name { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="auth-screen">
+  <div class="auth-card" id="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-mark">
+        <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+      </div>
+      <span class="auth-logo-text">Taskflow</span>
+    </div>
+
+    <!-- Login form -->
+    <div id="login-form">
+      <h1 class="auth-heading">Welcome back</h1>
+      <p class="auth-subtext">Sign in to your account to continue</p>
+      <div id="login-error" class="error-banner"></div>
+      <div class="form-group">
+        <label class="form-label" for="login-email">Email address</label>
+        <input class="form-input" type="email" id="login-email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="login-password">Password</label>
+        <input class="form-input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn-primary" id="login-btn" onclick="handleLogin()">
+        Sign in
+      </button>
+      <div class="auth-toggle">
+        Don't have an account? <a onclick="showRegister()">Create one</a>
+      </div>
+    </div>
+
+    <!-- Register form -->
+    <div id="register-form" style="display:none">
+      <h1 class="auth-heading">Create account</h1>
+      <p class="auth-subtext">Get started, it's free</p>
+      <div id="register-error" class="error-banner"></div>
+      <div class="form-group">
+        <label class="form-label" for="reg-name">Full name</label>
+        <input class="form-input" type="text" id="reg-name" placeholder="Jane Smith" autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="reg-email">Email address</label>
+        <input class="form-input" type="email" id="reg-email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="reg-password">Password</label>
+        <input class="form-input" type="password" id="reg-password" placeholder="At least 8 characters" autocomplete="new-password">
+      </div>
+      <button class="btn-primary" id="register-btn" onclick="handleRegister()">
+        Create account
+      </button>
+      <div class="auth-toggle">
+        Already have an account? <a onclick="showLogin()">Sign in</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="app-screen">
+  <nav class="navbar">
+    <div class="nav-logo">
+      <div class="nav-logo-mark">
+        <svg viewBox="0 0 24 24" fill="white"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+      </div>
+      <span class="nav-logo-text">Taskflow</span>
+    </div>
+    <div class="nav-spacer"></div>
+    <div class="nav-user">
+      <span class="nav-user-name" id="nav-username"></span>
+      <div class="nav-avatar" id="nav-avatar"></div>
+      <button class="btn-logout" onclick="handleLogout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        Sign out
+      </button>
+    </div>
+  </nav>
+
+  <div class="main-wrapper">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title" id="greeting-title">My Tasks</h1>
+        <p class="page-sub" id="greeting-sub">You're doing great. Keep it up!</p>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-label">Total Tasks</div>
+        <div class="stat-value" id="stat-total">0</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Completed</div>
+        <div class="stat-value" id="stat-done">0</div>
+      </div>
+      <div class="stat-card indigo">
+        <div class="stat-label">In Progress</div>
+        <div class="stat-value" id="stat-pending">0</div>
+      </div>
+    </div>
+
+    <!-- Create Task -->
+    <div class="create-section">
+      <div class="create-title">
+        <div class="create-title-dot"></div>
+        New Task
+      </div>
+      <div class="create-row">
+        <input class="create-input" type="text" id="new-title" placeholder="What needs to be done?" maxlength="100">
+        <input class="create-input" type="text" id="new-desc" placeholder="Add a description (optional)" maxlength="300">
+      </div>
+      <div class="create-footer">
+        <span class="create-char-hint" id="char-hint"></span>
+        <button class="btn-create" id="create-btn" onclick="handleCreateTask()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Add task
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <span class="search-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        </span>
+        <input class="search-input" type="text" id="search-input" placeholder="Search tasks…" oninput="renderTasks()">
+      </div>
+      <div class="filter-pills">
+        <button class="filter-pill active" data-filter="all" onclick="setFilter('all')">All</button>
+        <button class="filter-pill" data-filter="pending" onclick="setFilter('pending')">In progress</button>
+        <button class="filter-pill" data-filter="completed" onclick="setFilter('completed')">Completed</button>
+      </div>
+    </div>
+
+    <!-- Task list -->
+    <div class="tasks-header">
+      <span class="tasks-section-label">Tasks</span>
+      <span class="task-count-badge" id="visible-count">0</span>
+    </div>
+
+    <div class="task-list" id="task-list">
+      <!-- populated by JS -->
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+const API = 'http://localhost:5000/api';
+let currentUser = null;
+let tasks = [];
+let activeFilter = 'all';
+let editingId = null;
+
+const $ = id => document.getElementById(id);
+const setLoading = (btn, loading) => {
+  if (loading) {
+    btn.dataset.orig = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner"></span>';
+    btn.disabled = true;
+  } else {
+    btn.innerHTML = btn.dataset.orig;
+    btn.disabled = false;
+  }
+};
+
+function showToast(msg, type = 'default') {
+  const icons = {
+    success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>',
+    error:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>',
+    default: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>'
+  };
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `${icons[type] || icons.default}${msg}`;
+  $('toast-container').appendChild(t);
+  setTimeout(() => {
+    t.style.animation = 'toastOut 0.25s forwards';
+    setTimeout(() => t.remove(), 260);
+  }, 3000);
+}
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function getInitials(name) {
+  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+}
+
+function updateStats() {
+  const total = tasks.length;
+  const done = tasks.filter(t => t.completed).length;
+  $('stat-total').textContent   = total;
+  $('stat-done').textContent    = done;
+  $('stat-pending').textContent = total - done;
+}
+
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.filter === f);
+  });
+  renderTasks();
+}
+
+function showRegister() {
+  $('login-form').style.display = 'none';
+  $('register-form').style.display = 'block';
+  $('auth-card').style.animation = 'none';
+  void $('auth-card').offsetWidth;
+  $('auth-card').style.animation = 'slideUp 0.3s cubic-bezier(0.4,0,0.2,1)';
+}
+
+function showLogin() {
+  $('register-form').style.display = 'none';
+  $('login-form').style.display = 'block';
+  $('auth-card').style.animation = 'none';
+  void $('auth-card').offsetWidth;
+  $('auth-card').style.animation = 'slideUp 0.3s cubic-bezier(0.4,0,0.2,1)';
+}
+
+async function handleLogin() {
+  const btn = $('login-btn');
+  const err = $('login-error');
+  err.classList.remove('show');
+  const email = $('login-email').value.trim();
+  const pass  = $('login-password').value;
+  if (!email || !pass) { showErr(err, 'Please fill in all fields.'); return; }
+  setLoading(btn, true);
+  try {
+    const r = await fetch(`${API}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email, password: pass })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message || 'Login failed');
+    onLogin(d);
+  } catch(e) { showErr(err, e.message); setLoading(btn, false); }
+}
+
+async function handleRegister() {
+  const btn = $('register-btn');
+  const err = $('register-error');
+  err.classList.remove('show');
+  const name  = $('reg-name').value.trim();
+  const email = $('reg-email').value.trim();
+  const pass  = $('reg-password').value;
+  if (!name || !email || !pass) { showErr(err, 'Please fill in all fields.'); return; }
+  if (pass.length < 6) { showErr(err, 'Password must be at least 6 characters.'); return; }
+  setLoading(btn, true);
+  try {
+    const r = await fetch(`${API}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ name, email, password: pass })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message || 'Registration failed');
+    onLogin(d);
+  } catch(e) { showErr(err, e.message); setLoading(btn, false); }
+}
+
+function showErr(el, msg) {
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function onLogin(user) {
+  currentUser = user;
+  $('nav-username').textContent = user.name;
+  $('nav-avatar').textContent = getInitials(user.name);
+  updateGreeting(user.name);
+  $('auth-screen').style.display = 'none';
+  $('app-screen').style.display = 'block';
+  loadTasks();
+}
+
+function updateGreeting(name) {
+  const h = new Date().getHours();
+  const g = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  $('greeting-title').textContent = `${g}, ${name.split(' ')[0]}`;
+  $('greeting-sub').textContent   = "Here's what's on your plate today.";
+}
+
+async function handleLogout() {
+  try {
+    await fetch(`${API}/auth/logout`, { method: 'POST', credentials: 'include' });
+  } catch(_) {}
+  currentUser = null;
+  tasks = [];
+  $('app-screen').style.display = 'none';
+  $('auth-screen').style.display = 'flex';
+  $('login-email').value = '';
+  $('login-password').value = '';
+  showToast('Signed out successfully');
+}
+
+async function loadTasks() {
+  try {
+    const r = await fetch(`${API}/tasks`, { credentials: 'include' });
+    if (!r.ok) throw new Error('Failed to load tasks');
+    tasks = await r.json();
+    updateStats();
+    renderTasks();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function handleCreateTask() {
+  const btn   = $('create-btn');
+  const title = $('new-title').value.trim();
+  const desc  = $('new-desc').value.trim();
+  if (!title) {
+    $('new-title').focus();
+    $('new-title').classList.add('error');
+    setTimeout(() => $('new-title').classList.remove('error'), 2000);
+    return;
+  }
+  setLoading(btn, true);
+  try {
+    const r = await fetch(`${API}/tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ title, description: desc || ' ' })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message);
+    tasks.unshift(d);
+    $('new-title').value = '';
+    $('new-desc').value = '';
+    $('char-hint').textContent = '';
+    updateStats();
+    renderTasks();
+    showToast('Task created', 'success');
+  } catch(e) { showToast(e.message, 'error'); }
+  finally { setLoading(btn, false); }
+}
+
+async function toggleTask(id) {
+  const task = tasks.find(t => t._id === id);
+  if (!task) return;
+  const updated = { ...task, completed: !task.completed };
+  try {
+    const r = await fetch(`${API}/tasks/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(updated)
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message);
+    const idx = tasks.findIndex(t => t._id === id);
+    tasks[idx] = d;
+    updateStats();
+    renderTasks();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function deleteTask(id) {
+  const card = document.querySelector(`[data-id="${id}"]`);
+  if (card) {
+    card.classList.add('leaving');
+    await new Promise(r => setTimeout(r, 210));
+  }
+  try {
+    const r = await fetch(`${API}/tasks/${id}`, { method: 'DELETE', credentials: 'include' });
+    if (!r.ok) throw new Error('Delete failed');
+    tasks = tasks.filter(t => t._id !== id);
+    updateStats();
+    renderTasks();
+    showToast('Task deleted');
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function saveEdit(id) {
+  const titleEl = document.querySelector(`[data-id="${id}"] .edit-input`);
+  const descEl  = document.querySelector(`[data-id="${id}"] .edit-desc-input`);
+  if (!titleEl) return;
+  const title = titleEl.value.trim();
+  const desc  = descEl ? descEl.value.trim() : '';
+  if (!title) return;
+  try {
+    const r = await fetch(`${API}/tasks/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ title, description: desc || ' ' })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message);
+    const idx = tasks.findIndex(t => t._id === id);
+    tasks[idx] = d;
+    editingId = null;
+    renderTasks();
+    showToast('Task updated', 'success');
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+function startEdit(id) {
+  editingId = id;
+  renderTasks();
+  const inp = document.querySelector(`[data-id="${id}"] .edit-input`);
+  if (inp) { inp.focus(); inp.select(); }
+}
+
+function cancelEdit() {
+  editingId = null;
+  renderTasks();
+}
+
+function renderTasks() {
+  const query  = ($('search-input').value || '').toLowerCase();
+  let filtered = tasks.filter(t => {
+    const matchFilter = activeFilter === 'all' || (activeFilter === 'completed' && t.completed) || (activeFilter === 'pending' && !t.completed);
+    const matchSearch = !query || t.title.toLowerCase().includes(query) || (t.description || '').toLowerCase().includes(query);
+    return matchFilter && matchSearch;
+  });
+
+  $('visible-count').textContent = filtered.length;
+
+  const list = $('task-list');
+  list.innerHTML = '';
+
+  if (filtered.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        </div>
+        <div class="empty-title">${query ? 'No matching tasks' : activeFilter === 'completed' ? 'No completed tasks yet' : activeFilter === 'pending' ? 'All tasks done!' : 'No tasks yet'}</div>
+        <p class="empty-sub">${query ? 'Try a different search term' : 'Create your first task above to get started'}</p>
+      </div>`;
+    return;
+  }
+
+  filtered.forEach(task => {
+    const isEditing = editingId === task._id;
+    const card = document.createElement('div');
+    card.className = `task-card${task.completed ? ' completed' : ''}`;
+    card.dataset.id = task._id;
+
+    const checkSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>`;
+    const desc = (task.description || '').trim() === '' ? '' : task.description;
+
+    if (isEditing) {
+      card.innerHTML = `
+        <div class="task-check ${task.completed ? 'checked' : ''}" onclick="toggleTask('${task._id}')">${checkSvg}</div>
+        <div class="task-body">
+          <input class="edit-input" value="${escHtml(task.title)}" onkeydown="handleEditKey(event,'${task._id}')">
+          <textarea class="edit-desc-input" rows="2" onkeydown="handleEditKey(event,'${task._id}')">${escHtml(desc)}</textarea>
+          <div class="task-meta" style="margin-top:10px; gap:8px;">
+            <button class="btn-create" style="padding:6px 14px; font-size:13px;" onclick="saveEdit('${task._id}')">Save</button>
+            <button class="task-btn" onclick="cancelEdit()" title="Cancel">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </div>`;
+    } else {
+      const statusBadge = task.completed
+        ? `<span class="task-status-badge status-done">Done</span>`
+        : `<span class="task-status-badge status-pending">In progress</span>`;
+      card.innerHTML = `
+        <div class="task-check ${task.completed ? 'checked' : ''}" onclick="toggleTask('${task._id}')" title="${task.completed ? 'Mark incomplete' : 'Mark complete'}">${checkSvg}</div>
+        <div class="task-body">
+          <div class="task-title">${escHtml(task.title)}</div>
+          ${desc ? `<div class="task-desc">${escHtml(desc)}</div>` : ''}
+          <div class="task-meta">
+            <span class="task-date">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              ${formatDate(task.createdAt)}
+            </span>
+            ${statusBadge}
+          </div>
+        </div>
+        <div class="task-actions">
+          <button class="task-btn" onclick="startEdit('${task._id}')" title="Edit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="task-btn delete" onclick="deleteTask('${task._id}')" title="Delete">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+          </button>
+        </div>`;
+    }
+    list.appendChild(card);
+  });
+}
+
+function handleEditKey(e, id) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit(id); }
+  if (e.key === 'Escape') cancelEdit();
+}
+
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+$('new-title').addEventListener('input', function() {
+  const len = this.value.length;
+  $('char-hint').textContent = len > 0 ? `${len}/100` : '';
+});
+
+$('new-title').addEventListener('keydown', e => {
+  if (e.key === 'Enter') handleCreateTask();
+});
+
+$('login-email').addEventListener('keydown', e => { if(e.key === 'Enter') $('login-password').focus(); });
+$('login-password').addEventListener('keydown', e => { if(e.key === 'Enter') handleLogin(); });
+$('reg-name').addEventListener('keydown', e => { if(e.key === 'Enter') $('reg-email').focus(); });
+$('reg-email').addEventListener('keydown', e => { if(e.key === 'Enter') $('reg-password').focus(); });
+$('reg-password').addEventListener('keydown', e => { if(e.key === 'Enter') handleRegister(); });
+</script>
+</body>
+</html>
